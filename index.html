@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Shambhavi">
+    <title>Shambhavi Streak Tracker</title>
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%231d1d1f' width='100' height='100' rx='20'/><text x='50' y='55' text-anchor='middle' font-size='40' fill='white'>🧘</text></svg>">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #fafafa;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: #1d1d1f;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 0;
+            }
+            
+            .container {
+                border-radius: 0;
+                min-height: 100vh;
+                max-width: 100%;
+                border-left: none;
+                border-right: none;
+                border-top: none;
+            }
+        }
+
+        .container {
+            background: white;
+            border: 1px solid #e5e5e7;
+            border-radius: 16px;
+            padding: 40px;
+            max-width: 360px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+        }
+
+        h1 {
+            color: #1d1d1f;
+            font-size: 24px;
+            margin-bottom: 40px;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+        }
+
+        .streak-display {
+            margin-bottom: 40px;
+        }
+
+        .streak-number {
+            font-size: 64px;
+            font-weight: 200;
+            color: #1d1d1f;
+            line-height: 1;
+            margin-bottom: 8px;
+            letter-spacing: -2px;
+        }
+
+        .streak-label {
+            font-size: 14px;
+            color: #86868b;
+            font-weight: 400;
+            letter-spacing: 0.5px;
+        }
+
+        .stats-container {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 40px;
+            padding: 24px 0;
+            border-top: 1px solid #e5e5e7;
+            border-bottom: 1px solid #e5e5e7;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1d1d1f;
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: #86868b;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 500;
+        }
+
+        .progress-container {
+            margin-bottom: 40px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 2px;
+            background: #e5e5e7;
+            border-radius: 1px;
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #1d1d1f;
+            border-radius: 1px;
+            transition: width 0.4s ease;
+        }
+
+        .progress-text {
+            font-size: 13px;
+            color: #86868b;
+            font-weight: 400;
+        }
+
+        .practice-button {
+            width: 100%;
+            padding: 16px;
+            font-size: 15px;
+            font-weight: 500;
+            border: 1px solid #d2d2d7;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-bottom: 24px;
+            background: white;
+            color: #1d1d1f;
+        }
+
+        .practice-button.active {
+            background: #1d1d1f;
+            color: white;
+            border-color: #1d1d1f;
+        }
+
+        .practice-button.active:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .practice-button.completed {
+            background: #f5f5f7;
+            color: #86868b;
+            border-color: #d2d2d7;
+            cursor: not-allowed;
+        }
+
+        .calendar-toggle {
+            background: none;
+            border: 1px solid #d2d2d7;
+            color: #1d1d1f;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .calendar-toggle:hover {
+            background: #f5f5f7;
+        }
+
+        .calendar-view {
+            display: none;
+            margin-top: 40px;
+            text-align: left;
+        }
+
+        .calendar-view.active {
+            display: block;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+            margin-top: 20px;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 500;
+            background: #f5f5f7;
+            color: #86868b;
+        }
+
+        .calendar-day.completed {
+            background: #1d1d1f;
+            color: white;
+        }
+
+        .calendar-day.today {
+            border: 1px solid #1d1d1f;
+        }
+
+        .start-section {
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .start-button {
+            background: #1d1d1f;
+            color: white;
+            padding: 16px 32px;
+            border: 1px solid #1d1d1f;
+            border-radius: 12px;
+            font-weight: 500;
+            font-size: 15px;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.2s ease;
+        }
+
+        .start-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧘 Shambhavi Streak</h1>
+        
+        <div id="startSection" class="start-section">
+            <p style="margin-bottom: 15px; color: #856404;">Ready to begin your 40-day Shambhavi journey?</p>
+            <button class="start-button" onclick="startJourney()">Start My Journey</button>
+        </div>
+
+        <div id="mainContent" style="display: none;">
+            <div class="streak-display">
+                <div class="streak-number" id="currentStreak">0</div>
+                <div class="streak-label">Current Streak</div>
+            </div>
+
+            <div class="stats-container">
+                <div class="stat-item">
+                    <div class="stat-number" id="daysCompleted">0</div>
+                    <div class="stat-label">Days Done</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="daysLeft">40</div>
+                    <div class="stat-label">Days Left</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="longestStreak">0</div>
+                    <div class="stat-label">Longest</div>
+                </div>
+            </div>
+
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                </div>
+                <div class="progress-text" id="progressText">0% Complete</div>
+            </div>
+
+            <button class="practice-button active" id="practiceButton" onclick="markPracticeComplete()">
+                Mark Today's Practice
+            </button>
+
+            <button class="calendar-toggle" onclick="toggleCalendar()">
+                View Calendar
+            </button>
+
+            <div id="calendarView" class="calendar-view">
+                <h3 style="margin-bottom: 10px; color: #2c3e50;">Practice Calendar</h3>
+                <div class="calendar-grid" id="calendarGrid"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class ShambhaviTracker {
+            constructor() {
+                this.loadData();
+                this.updateDisplay();
+            }
+
+            loadData() {
+                const savedData = localStorage.getItem('shambhaviData');
+                if (savedData) {
+                    const data = JSON.parse(savedData);
+                    this.practiceDays = data.practiceDays || [];
+                    this.startDate = new Date(data.startDate);
+                    this.calculateStreaks();
+                } else {
+                    this.practiceDays = [];
+                    this.startDate = null;
+                }
+            }
+
+            saveData() {
+                const data = {
+                    practiceDays: this.practiceDays,
+                    startDate: this.startDate
+                };
+                localStorage.setItem('shambhaviData', JSON.stringify(data));
+            }
+
+            startJourney() {
+                this.startDate = new Date();
+                this.saveData();
+                document.getElementById('startSection').style.display = 'none';
+                document.getElementById('mainContent').style.display = 'block';
+                this.updateDisplay();
+            }
+
+            get today() {
+                return new Date().toDateString();
+            }
+
+            isTodayCompleted() {
+                return this.practiceDays.some(day => {
+                    const dayDate = new Date(day.date).toDateString();
+                    return dayDate === this.today && day.completed;
+                });
+            }
+
+            markPracticeComplete() {
+                if (this.isTodayCompleted()) return;
+
+                const practiceDay = {
+                    date: new Date().toISOString(),
+                    completed: true,
+                    notes: ''
+                };
+
+                this.practiceDays.push(practiceDay);
+                this.saveData();
+                this.calculateStreaks();
+                this.updateDisplay();
+            }
+
+            calculateStreaks() {
+                const completedDays = this.practiceDays
+                    .filter(day => day.completed)
+                    .sort((a, b) => new Date(a.date) - new Date(b.date));
+
+                if (completedDays.length === 0) {
+                    this.currentStreak = 0;
+                    this.longestStreak = 0;
+                    return;
+                }
+
+                let currentStreak = 0;
+                let longestStreak = 0;
+                let tempStreak = 1;
+
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+
+                for (let i = 0; i < completedDays.length; i++) {
+                    if (i > 0) {
+                        const prevDate = new Date(completedDays[i - 1].date);
+                        const currDate = new Date(completedDays[i].date);
+                        const diffDays = Math.floor((currDate - prevDate) / (1000 * 60 * 60 * 24));
+
+                        if (diffDays === 1) {
+                            tempStreak++;
+                        } else {
+                            longestStreak = Math.max(longestStreak, tempStreak);
+                            tempStreak = 1;
+                        }
+                    }
+                }
+
+                longestStreak = Math.max(longestStreak, tempStreak);
+
+                const lastCompleted = new Date(completedDays[completedDays.length - 1].date);
+                const daysSinceLast = Math.floor((today - lastCompleted) / (1000 * 60 * 60 * 24));
+
+                if (daysSinceLast <= 1) {
+                    currentStreak = tempStreak;
+                } else {
+                    currentStreak = 0;
+                }
+
+                this.currentStreak = currentStreak;
+                this.longestStreak = longestStreak;
+            }
+
+            get daysCompleted() {
+                return this.practiceDays.filter(day => day.completed).length;
+            }
+
+            get daysLeft() {
+                return 40 - this.daysCompleted;
+            }
+
+            get progress() {
+                return this.daysCompleted / 40;
+            }
+
+            updateDisplay() {
+                if (this.startDate) {
+                    document.getElementById('startSection').style.display = 'none';
+                    document.getElementById('mainContent').style.display = 'block';
+                }
+
+                document.getElementById('currentStreak').textContent = this.currentStreak;
+                document.getElementById('daysCompleted').textContent = this.daysCompleted;
+                document.getElementById('daysLeft').textContent = this.daysLeft;
+                document.getElementById('longestStreak').textContent = this.longestStreak;
+
+                const progressPercent = Math.round(this.progress * 100);
+                document.getElementById('progressFill').style.width = `${progressPercent}%`;
+                document.getElementById('progressText').textContent = `${progressPercent}% Complete`;
+
+                const button = document.getElementById('practiceButton');
+                if (this.isTodayCompleted()) {
+                    button.className = 'practice-button completed';
+                    button.textContent = '✓ Practice Completed Today';
+                } else {
+                    button.className = 'practice-button active';
+                    button.textContent = "Mark Today's Practice";
+                }
+
+                this.renderCalendar();
+            }
+
+            renderCalendar() {
+                if (!this.startDate) return;
+
+                const calendarGrid = document.getElementById('calendarGrid');
+                calendarGrid.innerHTML = '';
+
+                const today = new Date();
+                
+                for (let i = 0; i < 40; i++) {
+                    const date = new Date(this.startDate);
+                    date.setDate(date.getDate() + i);
+
+                    const isCompleted = this.practiceDays.some(day => {
+                        const dayDate = new Date(day.date).toDateString();
+                        return dayDate === date.toDateString() && day.completed;
+                    });
+
+                    const isToday = date.toDateString() === today.toDateString();
+
+                    const dayElement = document.createElement('div');
+                    dayElement.className = 'calendar-day';
+                    if (isCompleted) dayElement.classList.add('completed');
+                    if (isToday) dayElement.classList.add('today');
+                    dayElement.textContent = date.getDate();
+
+                    calendarGrid.appendChild(dayElement);
+                }
+            }
+        }
+
+        // Initialize the app
+        let tracker;
+        
+        window.onload = function() {
+            tracker = new ShambhaviTracker();
+        };
+
+        function startJourney() {
+            tracker.startJourney();
+        }
+
+        function markPracticeComplete() {
+            tracker.markPracticeComplete();
+        }
+
+        function toggleCalendar() {
+            const calendarView = document.getElementById('calendarView');
+            calendarView.classList.toggle('active');
+        }
+    </script>
+</body>
+</html>
